@@ -1,11 +1,13 @@
 import Phaser from 'phaser';
 import Player from '../entities/Player';
 import MovementKeys from '../input/MovementKeys';
+import Minimap from '../ui/Minimap';
 import TileGrid, { TILE } from '../world/TileGrid';
 
 export default class CampusScene extends Phaser.Scene {
   private player!: Player;
   private keys!: MovementKeys;
+  private minimap?: Minimap;
 
   constructor() {
     super('CampusScene');
@@ -44,10 +46,14 @@ export default class CampusScene extends Phaser.Scene {
 
     // --- 6. Input ---
     this.keys = new MovementKeys(this);
+
+    // --- 7. Minimap ---
+    //this.minimap = new Minimap(this, 'map', this.player.root);
   }
 
   update(): void {
     const { dx, dy } = this.keys.direction();
     this.player.walk(dx, dy);
+    if (this.minimap) this.minimap.update();
   }
 }
