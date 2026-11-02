@@ -1,0 +1,46 @@
+.stats-panel {
+  width: 220px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  padding: 16px;
+  background-color: #241d3b;
+  border-left: 2px solid #3a3058;
+  color: #e8e4f5;
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  overflow-y: auto;
+}
+
+.stats-panel__title {
+  margin: 0 0 16px;
+  font-size: 14px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #a79fc4;
+}
+
+.stat {
+  margin-bottom: 14px;
+}
+
+.stat__header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+
+.stat__value {
+  color: #a79fc4;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat__track {
+  height: 2px;
+  background-color: #3a3058;
+}
+
+.stat__fill {
+  height: 100%;
+  background-color: #4ade80;
+  transition: width 200ms ease-out;
+}
