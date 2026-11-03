@@ -37,7 +37,7 @@ export default class CampusScene extends Phaser.Scene {
       .setOutlineStyle(0xffffff, 0.3);
 
     // --- 4. Player ---
-    this.player = new Player(this, tiles, 5, 5);
+    this.player = new Player(this, tiles, 65, 38);
 
     // --- 5. Camera ---
     const cam = this.cameras.main;
