@@ -14,7 +14,7 @@ export default class CampusScene extends Phaser.Scene {
   }
 
   preload(): void {
-    this.load.image('map', 'assets/campus__v2.png');
+    this.load.image('map', 'assets/campus__v3.png');
     this.load.spritesheet('player', 'assets/player/student.png', { frameWidth: 32, frameHeight: 32 });
   }
 
