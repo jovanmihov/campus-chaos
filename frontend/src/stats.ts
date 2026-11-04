@@ -8,8 +8,8 @@ export interface Stat {
 }
 
 let stats: readonly Stat[] = [
-  { key: 'energy', label: 'Energy', value: 100, max: 100 },
   { key: 'gpa', label: 'GPA', value: 5, max: 10 },
+  { key: 'energy', label: 'Energy', value: 100, max: 100 },
   { key: 'dignity', label: 'Dignity', value: 100, max: 100 },
   { key: 'sanity', label: 'Sanity', value: 100, max: 100 },
 ];

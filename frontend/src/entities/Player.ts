@@ -34,6 +34,10 @@ export default class Player {
       .setDepth(5);
   }
 
+  get tile(): { x: number; y: number } {
+    return { x: this.tileX, y: this.tileY };
+  }
+
   /** Take one step, unless a step is already in progress. */
   walk(dx: number, dy: number): void {
     if (this.moving) return;
@@ -51,10 +55,9 @@ export default class Player {
   /** Pick the frame for a direction; left-facing views are the right-facing ones mirrored. */
   private face(dx: number, dy: number): void {
     let frame: number;
-    if (dy < 0) frame = FRAME.back;       // no back-diagonal art, so up-left/up-right use the back view
+    if (dy < 0) frame = FRAME.back;
     else if (dx === 0) frame = FRAME.front;
-    else frame = FRAME.diagonal;          // also used for straight left/right
-
+    else frame = FRAME.diagonal;
     this.figure.setFrame(frame);
     if (dx !== 0) this.figure.setFlipX(dx < 0);
   }

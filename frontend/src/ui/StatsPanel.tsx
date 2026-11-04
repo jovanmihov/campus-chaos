@@ -24,8 +24,8 @@ function StatBar({ label, value, max }: StatBarProps) {
     <div className="stat">
       <div className="stat__header">
         <span className="stat__label">{label}</span>
-        {label !== 'GPA' && <span className="stat__value">{value}%</span>}
-        {label === 'GPA' && <span className="stat__value">{parseFloat(value.toFixed(2))}</span>}
+        {label !== 'GPA' && <span className="stat__value">{value}/{max}</span>}
+        {label === 'GPA' && <span className="stat__value">{parseFloat(value.toFixed(2))}/{max}</span>}
       </div>
       <div
         className="stat__track"

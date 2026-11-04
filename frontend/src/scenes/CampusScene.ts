@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import Player from '../entities/Player';
+import Sentry from '../entities/Sentry';
 import MovementKeys from '../input/MovementKeys';
 import Minimap from '../ui/Minimap';
 import TileGrid, { TILE } from '../world/TileGrid';
@@ -39,15 +40,18 @@ export default class CampusScene extends Phaser.Scene {
     // --- 4. Player ---
     this.player = new Player(this, tiles, 65, 38);
 
-    // --- 5. Camera ---
+    // --- 5. Sentries: each one sweeps its own vision ray ---
+    new Sentry(this, tiles, 15, 45, { facingDeg: 270, watch: () => this.player.tile });
+
+    // --- 6. Camera ---
     const cam = this.cameras.main;
     cam.setBounds(0, 0, bg.width, bg.height);
     cam.startFollow(this.player.root, true);
 
-    // --- 6. Input ---
+    // --- 7. Input ---
     this.keys = new MovementKeys(this);
 
-    // --- 7. Minimap ---
+    // --- 8. Minimap ---
     //this.minimap = new Minimap(this, 'map', this.player.root);
   }
 
