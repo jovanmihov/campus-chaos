@@ -44,7 +44,7 @@ export default class VisionRay {
     this.watch = watch;
     this.range = range * TILE;
     this.color = color;
-    this.gfx = scene.add.graphics().setDepth(4);   // under people and objects (depth 5)
+    this.gfx = scene.add.graphics().setDepth(4);   // under objects (depth 5) and the player (depth 6)
 
     // Swing from one side to the other and back forever, easing at each end like a turning head
     this.sweep = { offsetDeg: -sweepDeg / 2 };
