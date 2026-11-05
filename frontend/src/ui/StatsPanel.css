@@ -1,4 +1,6 @@
 .stats-panel {
+  display: flex;
+  flex-direction: column;
   width: 220px;
   flex-shrink: 0;
   box-sizing: border-box;
@@ -16,6 +18,21 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: #a79fc4;
+}
+
+.stats-panel__code {
+  display: flex;
+  justify-content: space-between;
+  margin: auto 0 0;
+  padding-top: 12px;
+  font-size: 13px;
+  color: #a79fc4;
+}
+
+.stats-panel__code-value {
+  color: #e8e4f5;
+  letter-spacing: 0.12em;
+  user-select: all;
 }
 
 .stat {

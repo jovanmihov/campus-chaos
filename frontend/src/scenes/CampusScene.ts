@@ -2,16 +2,24 @@ import Phaser from 'phaser';
 import Player from '../entities/Player';
 import Sentry from '../entities/Sentry';
 import MovementKeys from '../input/MovementKeys';
+import { startAutosave, type Tile } from '../save';
 import Minimap from '../ui/Minimap';
 import TileGrid, { TILE } from '../world/TileGrid';
+
+const SPAWN: Tile = { x: 65, y: 38 };
 
 export default class CampusScene extends Phaser.Scene {
   private player!: Player;
   private keys!: MovementKeys;
   private minimap?: Minimap;
+  private savedTile?: Tile;
 
   constructor() {
     super('CampusScene');
+  }
+
+  init(data: { tile?: Tile }): void {
+    this.savedTile = data.tile;
   }
 
   preload(): void {
@@ -37,11 +45,14 @@ export default class CampusScene extends Phaser.Scene {
       .setOrigin(0, 0)
       .setOutlineStyle(0xffffff, 0.3);
 
-    // --- 4. Player ---
-    this.player = new Player(this, tiles, 65, 38);
-
-    // --- 5. Sentries: each one sweeps its own vision ray ---
+    // --- 4. Sentries: each one sweeps its own vision ray ---
     new Sentry(this, tiles, 15, 45, { facingDeg: 270, watch: () => this.player.tile });
+
+    // --- 5. Player: resumes from the save, unless the map changed and that tile is now solid ---
+    const saved = this.savedTile;
+    const start = saved && tiles.isWalkable(saved.x, saved.y) ? saved : SPAWN;
+    this.player = new Player(this, tiles, start.x, start.y);
+    startAutosave(() => ({ scene: this.scene.key, position: this.player.tile }));
 
     // --- 6. Camera ---
     const cam = this.cameras.main;

@@ -2,7 +2,11 @@ import { useSyncExternalStore } from 'react';
 import { getStats, subscribeStats, type Stat } from '../stats';
 import './StatsPanel.css';
 
-export default function StatsPanel() {
+interface StatsPanelProps {
+  playerCode: string | null;
+}
+
+export default function StatsPanel({ playerCode }: StatsPanelProps) {
   const stats = useSyncExternalStore(subscribeStats, getStats);
 
   return (
@@ -11,6 +15,12 @@ export default function StatsPanel() {
       {stats.map((stat) => (
         <StatBar key={stat.key} label={stat.label} value={stat.value} max={stat.max} />
       ))}
+      {playerCode && (
+        <p className="stats-panel__code">
+          <span>Player code</span>
+          <span className="stats-panel__code-value">{playerCode}</span>
+        </p>
+      )}
     </aside>
   );
 }
