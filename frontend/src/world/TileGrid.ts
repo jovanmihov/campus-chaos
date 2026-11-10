@@ -4,6 +4,17 @@ export function tileCenter(t: number): number {
   return t * TILE + TILE / 2;
 }
 
+export function circleOffsets(radius: number): { x: number; y: number }[] {
+  const limit = (radius + 0.5) ** 2;
+  const offsets: { x: number; y: number }[] = [];
+  for (let y = -radius; y <= radius; y++) {
+    for (let x = -radius; x <= radius; x++) {
+      if (x * x + y * y <= limit) offsets.push({ x, y });
+    }
+  }
+  return offsets;
+}
+
 export default class TileGrid {
   private blocked = new Set<string>();
 

@@ -1,20 +1,14 @@
 import Phaser from 'phaser';
-import Player from '../entities/Player';
-import MovementKeys from '../input/MovementKeys';
+import DefensiveBuilding1 from '../entities/defense/DefensiveBuilding1';
 import { startAutosave, type Tile } from '../save';
+import BlockPlacer from '../ui/BlockPlacer';
+import { addTextButton, disableTextButton } from '../ui/TextButton';
 import TileGrid, { TILE } from '../world/TileGrid';
+import VirusWave from '../world/VirusWave';
 
-/**
- * Where viruses will attack a computer that the player defends.
- * For now the ground is a placeholder: every tile is a slightly different random shade of green.
- * It's exactly one screen big, so the camera never has to move.
- */
 export default class ComputerDefenseScene extends Phaser.Scene {
-  private player!: Player;
-  private keys!: MovementKeys;
   private cols = 0;
   private rows = 0;
-  private savedTile?: Tile;
   private campusTile?: Tile;
 
   constructor() {
@@ -22,15 +16,7 @@ export default class ComputerDefenseScene extends Phaser.Scene {
   }
 
   init(data: { tile?: Tile; campusTile?: Tile }): void {
-    this.savedTile = data.tile;
-    this.campusTile = data.campusTile;
-  }
-
-  preload(): void {
-    // Loaded by CampusScene too, but a save can start the game straight in this scene
-    if (!this.textures.exists('player')) {
-      this.load.spritesheet('player', 'assets/player/student.png', { frameWidth: 32, frameHeight: 32 });
-    }
+    this.campusTile = data.campusTile ?? data.tile;
   }
 
   create(): void {
@@ -39,19 +25,20 @@ export default class ComputerDefenseScene extends Phaser.Scene {
     const tiles = new TileGrid(this.cols, this.rows);
     this.drawGround();
 
-    const spawn: Tile = { x: Math.floor(this.cols / 2), y: Math.floor(this.rows / 2) };
-    const saved = this.savedTile;
-    const start = saved && tiles.isWalkable(saved.x, saved.y) ? saved : spawn;
-    this.player = new Player(this, tiles, start.x, start.y);
-    startAutosave(() => ({ scene: this.scene.key, position: this.player.tile }));
+    startAutosave(() => ({ scene: this.scene.key, position: this.campusTile ?? { x: -1, y: -1 } }));
 
-    this.keys = new MovementKeys(this);
-    this.addBackButton();
-  }
+    addTextButton(this, 8, 8, '< Back to campus').on('pointerdown', () =>
+      this.scene.start('CampusScene', { tile: this.campusTile })
+    );
 
-  update(): void {
-    const { dx, dy } = this.keys.direction();
-    this.player.walk(dx, dy);
+    const wave = new VirusWave(this, this.cols);
+    const waveButton = addTextButton(this, this.scale.width - 8, 8, 'Start wave').setOrigin(1, 0);
+    waveButton.on('pointerdown', () => {
+      wave.start();
+      disableTextButton(waveButton, 'Wave running');
+    });
+
+    new BlockPlacer(this, tiles, [DefensiveBuilding1]);
   }
 
   private drawGround(): void {
@@ -72,23 +59,5 @@ export default class ComputerDefenseScene extends Phaser.Scene {
         .fillStyle(color.color, 0.8)
         .fillRect(rnd(0, this.cols * TILE), rnd(0, this.rows * TILE), size, size);
     }
-  }
-
-  private addBackButton(): void {
-    const button = this.add
-      .text(8, 8, '< Back to campus', {
-        fontFamily: 'ui-monospace, Consolas, monospace',
-        fontSize: '12px',
-        color: '#e8e4f5',
-        backgroundColor: '#241d3b',
-        padding: { x: 6, y: 4 },
-      })
-      .setScrollFactor(0)
-      .setDepth(7)
-      .setInteractive({ useHandCursor: true });
-
-    button.on('pointerover', () => button.setBackgroundColor('#4b3f70'));
-    button.on('pointerout', () => button.setBackgroundColor('#241d3b'));
-    button.on('pointerdown', () => this.scene.start('CampusScene', { tile: this.campusTile }));
   }
 }
