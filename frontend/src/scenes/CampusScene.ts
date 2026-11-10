@@ -1,12 +1,24 @@
 import Phaser from 'phaser';
 import Player from '../entities/Player';
-import Sentry from '../entities/Sentry';
+import Portal from '../entities/Portal';
+import ProbabilityBlock from '../entities/ProbabilityBlock';
+import Watcher from '../entities/Watcher';
 import MovementKeys from '../input/MovementKeys';
+import { isPortalDialogOpen, openPortalDialog } from '../portalDialog';
+import { isProbabilityGameOpen, startProbabilityGame } from '../probabilityGame';
 import { startAutosave, type Tile } from '../save';
 import Minimap from '../ui/Minimap';
 import TileGrid, { TILE } from '../world/TileGrid';
 
 const SPAWN: Tile = { x: 65, y: 38 };
+const WATCHER_TILE: Tile = { x: SPAWN.x - 3, y: SPAWN.y };
+const PROBABILITY_BLOCK_TILE: Tile = { x: SPAWN.x, y: SPAWN.y - 3 };
+const PORTAL_TILE: Tile = { x: SPAWN.x + 3, y: SPAWN.y };
+
+/** True while a dialog is up, so the player shouldn't move or start anything else. */
+function isDialogOpen(): boolean {
+  return isProbabilityGameOpen() || isPortalDialogOpen();
+}
 
 export default class CampusScene extends Phaser.Scene {
   private player!: Player;
@@ -45,8 +57,10 @@ export default class CampusScene extends Phaser.Scene {
       .setOrigin(0, 0)
       .setOutlineStyle(0xffffff, 0.3);
 
-    // --- 4. Sentries: each one sweeps its own vision ray ---
-    new Sentry(this, tiles, 15, 45, { facingDeg: 270, watch: () => this.player.tile });
+    // --- 4. Watchers: each one sweeps its own vision ray ---
+    new Watcher(this, tiles, WATCHER_TILE.x, WATCHER_TILE.y, { facingDeg: 270, watch: () => this.player.tile });
+    const probabilityBlock = new ProbabilityBlock(this, tiles, PROBABILITY_BLOCK_TILE.x, PROBABILITY_BLOCK_TILE.y);
+    const portal = new Portal(this, tiles, PORTAL_TILE.x, PORTAL_TILE.y);
 
     // --- 5. Player: resumes from the save, unless the map changed and that tile is now solid ---
     const saved = this.savedTile;
@@ -61,14 +75,25 @@ export default class CampusScene extends Phaser.Scene {
 
     // --- 7. Input ---
     this.keys = new MovementKeys(this);
+    this.input.keyboard!.on('keydown-SPACE', (event: KeyboardEvent) => {
+      if (event.repeat || isDialogOpen()) return;
+      const tile = this.player.tile;
+      if (probabilityBlock.isNextTo(tile)) {
+        startProbabilityGame();
+      } else if (portal.isNextTo(tile)) {
+        openPortalDialog(() => this.scene.start('ComputerDefenseScene', { campusTile: this.player.tile }));
+      }
+    });
 
     // --- 8. Minimap ---
     //this.minimap = new Minimap(this, 'map', this.player.root);
   }
 
   update(): void {
-    const { dx, dy } = this.keys.direction();
-    this.player.walk(dx, dy);
+    if (!isDialogOpen()) {
+      const { dx, dy } = this.keys.direction();
+      this.player.walk(dx, dy);
+    }
     if (this.minimap) this.minimap.update();
   }
 }

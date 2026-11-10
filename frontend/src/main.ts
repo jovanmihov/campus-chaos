@@ -3,10 +3,13 @@ import { createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { loadGame, type LoadedGame } from './save';
 import CampusScene from './scenes/CampusScene';
+import ComputerDefenseScene from './scenes/ComputerDefenseScene';
+import PortalDialog from './ui/PortalDialog';
+import ProbabilityGameDialog from './ui/ProbabilityGameDialog';
 import StatsPanel from './ui/StatsPanel';
 
 // Saves name their scene by key, so every scene a player can be in must be listed here
-const SCENES: Record<string, typeof Phaser.Scene> = { CampusScene };
+const SCENES: Record<string, typeof Phaser.Scene> = { CampusScene, ComputerDefenseScene };
 const FIRST_SCENE = 'CampusScene';
 
 async function start(): Promise<void> {
@@ -39,6 +42,15 @@ async function start(): Promise<void> {
     throw new Error('#stats-root element not found');
   }
   createRoot(statsRoot).render(createElement(StatsPanel, { playerCode }));
+
+  const dialogRoot = document.getElementById('dialog-root');
+  if (!dialogRoot) {
+    throw new Error('#dialog-root element not found');
+  }
+  createRoot(dialogRoot).render([
+    createElement(ProbabilityGameDialog, { key: 'probability' }),
+    createElement(PortalDialog, { key: 'portal' }),
+  ]);
 }
 
 void start();

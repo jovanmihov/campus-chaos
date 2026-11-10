@@ -4,7 +4,7 @@ import TileGrid, { TILE, tileCenter } from '../world/TileGrid';
 const STEP_MS = 160;                      // time to walk one tile
 const HOP_PX = 2;                         // how far the body lifts mid-step
 const TILT_DEG = 5;                       // sway per step, alternating sides
-const DEPTH = 6;                          // player is above sentries (5) and below UI (7)
+const DEPTH = 6;                          // player is above watchers (5) and below UI (7)
 
 // Frames of assets/player/student.png, left to right (32x32 each)
 const FRAME = { diagonal: 0, front: 1, back: 2 };

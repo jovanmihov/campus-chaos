@@ -28,7 +28,7 @@ export default function StatsPanel({ playerCode }: StatsPanelProps) {
 type StatBarProps = Pick<Stat, 'label' | 'value' | 'max'>;
 
 function StatBar({ label, value, max }: StatBarProps) {
-  const percent = label !== 'GPA'? Math.round((value / max) * 100) : (value-5)/(max-5);
+  const percent = label !== 'GPA'? Math.round((value / max) * 100) : Math.round(((value - 5) / (max - 5)) * 100);
 
   return (
     <div className="stat">

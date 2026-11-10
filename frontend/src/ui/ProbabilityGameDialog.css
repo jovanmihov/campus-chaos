@@ -1,0 +1,99 @@
+.probability-dialog__backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(28, 23, 46, 0.6);
+}
+
+.probability-dialog {
+  box-sizing: border-box;
+  width: min(440px, calc(100vw - 32px));
+  padding: 20px 24px;
+  background-color: #241d3b;
+  border: 2px solid #3a3058;
+  color: #e8e4f5;
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  text-align: center;
+}
+
+.probability-dialog--score {
+  width: min(240px, calc(100vw - 32px));
+}
+
+.probability-dialog__title {
+  margin: 0 0 12px;
+  font-size: 14px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #a79fc4;
+}
+
+.probability-dialog__text {
+  margin: 0 0 16px;
+  font-size: 14px;
+}
+
+.probability-dialog__bar {
+  position: relative;
+  height: 8px;
+  background-color: #ff3344;
+}
+
+.probability-dialog__green {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background-color: #4ade80;
+}
+
+.probability-dialog__arrow-track {
+  position: relative;
+  height: 14px;
+  margin-top: 2px;
+}
+
+.probability-dialog__arrow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translateX(-50%);
+  border-right: 8px solid transparent;
+  border-bottom: 14px solid #e8e4f5;
+  border-left: 8px solid transparent;
+}
+
+.probability-dialog__hint {
+  margin: 12px 0 0;
+  font-size: 12px;
+  color: #a79fc4;
+}
+
+.probability-dialog__score {
+  margin: 0 0 16px;
+  font-size: 48px;
+  font-variant-numeric: tabular-nums;
+}
+
+.probability-dialog__button {
+  padding: 6px 28px;
+  background-color: #3a3058;
+  border: 2px solid #a79fc4;
+  color: #e8e4f5;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.probability-dialog__button:hover,
+.probability-dialog__button:focus-visible {
+  background-color: #4b3f70;
+  outline: none;
+}
+
+.portal-dialog__actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
