@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import Computer from '../entities/Computer';
 import DefensiveBuilding1 from '../entities/defense/DefensiveBuilding1';
 import { startAutosave, type Tile } from '../save';
 import BlockPlacer from '../ui/BlockPlacer';
@@ -24,6 +25,7 @@ export default class ComputerDefenseScene extends Phaser.Scene {
     this.rows = Math.floor(this.scale.height / TILE);
     const tiles = new TileGrid(this.cols, this.rows);
     this.drawGround();
+    new Computer(this, tiles);
 
     startAutosave(() => ({ scene: this.scene.key, position: this.campusTile ?? { x: -1, y: -1 } }));
 
