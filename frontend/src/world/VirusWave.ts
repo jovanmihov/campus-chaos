@@ -5,11 +5,17 @@ const SPAWN_MS = 1000;
 
 export default class VirusWave {
   private running = false;
+  private list: Virus[] = [];
 
   constructor(
     private scene: Phaser.Scene,
     private columns: number
   ) {}
+
+  get viruses(): readonly Virus[] {
+    this.list = this.list.filter((v) => v.alive);
+    return this.list;
+  }
 
   start(): void {
     if (this.running) return;
@@ -18,6 +24,6 @@ export default class VirusWave {
   }
 
   private spawn(): void {
-    new Virus(this.scene, Phaser.Math.Between(0, this.columns - 1));
+    this.list.push(new Virus(this.scene, Phaser.Math.Between(0, this.columns - 1)));
   }
 }

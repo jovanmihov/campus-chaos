@@ -4,15 +4,22 @@ export function tileCenter(t: number): number {
   return t * TILE + TILE / 2;
 }
 
+function inCircle(dx: number, dy: number, radius: number): boolean {
+  return dx * dx + dy * dy <= (radius + 0.5) ** 2;
+}
+
 export function circleOffsets(radius: number): { x: number; y: number }[] {
-  const limit = (radius + 0.5) ** 2;
   const offsets: { x: number; y: number }[] = [];
   for (let y = -radius; y <= radius; y++) {
     for (let x = -radius; x <= radius; x++) {
-      if (x * x + y * y <= limit) offsets.push({ x, y });
+      if (inCircle(x, y, radius)) offsets.push({ x, y });
     }
   }
   return offsets;
+}
+
+export function withinTiles(a: { x: number; y: number }, b: { x: number; y: number }, radius: number): boolean {
+  return inCircle(b.x - a.x, b.y - a.y, radius);
 }
 
 export default class TileGrid {

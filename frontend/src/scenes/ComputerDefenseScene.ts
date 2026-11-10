@@ -11,6 +11,9 @@ export default class ComputerDefenseScene extends Phaser.Scene {
   private cols = 0;
   private rows = 0;
   private campusTile?: Tile;
+  private computer!: Computer;
+  private wave!: VirusWave;
+  private placer!: BlockPlacer;
 
   constructor() {
     super('ComputerDefenseScene');
@@ -25,7 +28,7 @@ export default class ComputerDefenseScene extends Phaser.Scene {
     this.rows = Math.floor(this.scale.height / TILE);
     const tiles = new TileGrid(this.cols, this.rows);
     this.drawGround();
-    new Computer(this, tiles);
+    this.computer = new Computer(this, tiles);
 
     startAutosave(() => ({ scene: this.scene.key, position: this.campusTile ?? { x: -1, y: -1 } }));
 
@@ -34,13 +37,26 @@ export default class ComputerDefenseScene extends Phaser.Scene {
     );
 
     const wave = new VirusWave(this, this.cols);
+    this.wave = wave;
     const waveButton = addTextButton(this, this.scale.width - 8, 8, 'Start wave').setOrigin(1, 0);
     waveButton.on('pointerdown', () => {
       wave.start();
       disableTextButton(waveButton, 'Wave running');
     });
 
-    new BlockPlacer(this, tiles, [DefensiveBuilding1]);
+    this.placer = new BlockPlacer(this, tiles, [DefensiveBuilding1]);
+  }
+
+  update(_time: number, delta: number): void {
+    const viruses = this.wave.viruses;
+    for (const block of this.placer.placed) block.update(delta, viruses);
+
+    for (const virus of viruses) {
+      if (virus.alive && this.computer.isHitBy(virus)) {
+        this.computer.damage(virus.attack);
+        virus.remove();
+      }
+    }
   }
 
   private drawGround(): void {
