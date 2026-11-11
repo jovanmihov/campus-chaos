@@ -29,3 +29,6 @@ __pycache__/
 
 # Local database
 *.sqlite3
+
+# Claude Code local config
+.claude/
