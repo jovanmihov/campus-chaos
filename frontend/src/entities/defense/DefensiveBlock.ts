@@ -1,10 +1,12 @@
 import Phaser from 'phaser';
 import LaserBeam from '../../components/LaserBeam';
-import TileGrid, { TILE, tileCenter, withinTiles } from '../../world/TileGrid';
+import { canShoot, closestTarget } from '../../world/targeting';
+import TileGrid, { TILE, tileCenter } from '../../world/TileGrid';
 import type Virus from '../Virus';
 
 export const OUTLINE_COLOR = 0x1c172e;
 const DEPTH = 5;
+const LIFTED_ALPHA = 0.35;
 
 export interface DefensiveBlockStats {
   damagePerSecond: number;
@@ -21,53 +23,63 @@ export interface DefensiveBlockKind {
 export default abstract class DefensiveBlock {
   protected readonly body: Phaser.GameObjects.Rectangle;
   private beam: LaserBeam;
-  private target: Virus | null = null;
+  private lockedOn: Virus | null = null;
 
   constructor(
     scene: Phaser.Scene,
-    grid: TileGrid,
-    readonly tileX: number,
-    readonly tileY: number,
+    private readonly grid: TileGrid,
+    private _tileX: number,
+    private _tileY: number,
     readonly stats: DefensiveBlockStats,
     color: number
   ) {
-    grid.block(tileX, tileY);
+    grid.block(_tileX, _tileY);
 
     this.body = scene.add
-      .rectangle(tileCenter(tileX), tileCenter(tileY), TILE, TILE, color)
+      .rectangle(tileCenter(_tileX), tileCenter(_tileY), TILE, TILE, color)
       .setStrokeStyle(1, OUTLINE_COLOR)
       .setDepth(DEPTH);
     this.beam = new LaserBeam(scene, color);
   }
 
-  update(deltaMs: number, viruses: readonly Virus[]): void {
-    if (!this.target || !this.target.alive || !this.inRange(this.target)) {
-      this.target = this.pickTarget(viruses);
-    }
+  get tileX(): number {
+    return this._tileX;
+  }
+
+  get tileY(): number {
+    return this._tileY;
+  }
+
+  setLifted(lifted: boolean): void {
+    this.body.setAlpha(lifted ? LIFTED_ALPHA : 1);
+  }
+
+  moveTo(tileX: number, tileY: number): void {
+    this.grid.unblock(this._tileX, this._tileY);
+    this._tileX = tileX;
+    this._tileY = tileY;
+    this.grid.block(tileX, tileY);
+    this.body.setPosition(tileCenter(tileX), tileCenter(tileY));
+  }
+
+  get target(): Virus | null {
+    return this.lockedOn?.onBoard ? this.lockedOn : null;
+  }
+
+  retarget(viruses: readonly Virus[]): void {
+    const current = this.target;
+    if (current && canShoot(this, current.tile)) return;
+    this.lockedOn = closestTarget(this, viruses.filter((virus) => virus.onBoard));
+  }
+
+  drawBeam(): void {
     const target = this.target;
-    if (!target) {
-      this.beam.off();
-      return;
-    }
-
-    this.beam.aim(this.body, target);
-
-    const damage = (this.stats.damagePerSecond * deltaMs) / 1000;
-    const center = target.tile;
-    for (const virus of viruses) {
-      if (withinTiles(center, virus.tile, this.stats.damageRadius)) virus.damage(damage);
-    }
+    if (target) this.beam.aim(this.body, target);
+    else this.beam.off();
   }
 
-  private inRange(virus: Virus): boolean {
-    return withinTiles({ x: this.tileX, y: this.tileY }, virus.tile, this.stats.radius);
-  }
-
-  private pickTarget(viruses: readonly Virus[]): Virus | null {
-    let best: Virus | null = null;
-    for (const virus of viruses) {
-      if (virus.alive && this.inRange(virus) && (!best || virus.y > best.y)) best = virus;
-    }
-    return best;
+  stop(): void {
+    this.lockedOn = null;
+    this.beam.off();
   }
 }

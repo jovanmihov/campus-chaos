@@ -34,17 +34,15 @@ export default class TileGrid {
     this.blocked.add(`${x},${y}`);
   }
 
+  unblock(x: number, y: number): void {
+    this.blocked.delete(`${x},${y}`);
+  }
+
   isWalkable(x: number, y: number): boolean {
     if (x < 0 || y < 0 || x >= this.width || y >= this.height) return false;
     return !this.blocked.has(`${x},${y}`);
   }
-
-  /**
-   * Shoot a ray from pixel (x0, y0) along `angle` (radians) and return the pixel where it
-   * stops: the edge of the first solid tile, the map edge, or `maxDist` px away.
-   * The tile the ray starts in is never checked, so a solid object can see out of its own tile.
-   * `onTile` is called for every open tile the ray passes through, in order.
-   */
+  
   castRay(
     x0: number,
     y0: number,

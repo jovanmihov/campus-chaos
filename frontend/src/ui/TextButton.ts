@@ -19,15 +19,23 @@ export function addTextButton(scene: Phaser.Scene, x: number, y: number, label: 
     .setDepth(DEPTH)
     .setInteractive({ useHandCursor: true });
 
-  button.on('pointerover', () => button.setBackgroundColor(BACKGROUND_HOVER));
-  button.on('pointerout', () => button.setBackgroundColor(BACKGROUND));
+  addHover(button);
   return button;
 }
 
-/**
- * Turns a button into a faded label that can't be pressed. It still catches clicks,
- * so they don't reach whatever is underneath it.
- */
+function addHover(button: Phaser.GameObjects.Text): void {
+  button.on('pointerover', () => button.setBackgroundColor(BACKGROUND_HOVER));
+  button.on('pointerout', () => button.setBackgroundColor(BACKGROUND));
+}
+
+export function enableTextButton(button: Phaser.GameObjects.Text, label: string): Phaser.GameObjects.Text {
+  button.off('pointerover').off('pointerout');
+  addHover(button);
+  button.setText(label).setBackgroundColor(BACKGROUND).setAlpha(1);
+  button.input!.cursor = 'pointer';
+  return button;
+}
+
 export function disableTextButton(button: Phaser.GameObjects.Text, label: string): void {
   button.off('pointerover').off('pointerout').off('pointerdown');
   button.setText(label).setBackgroundColor(BACKGROUND).setAlpha(0.6);

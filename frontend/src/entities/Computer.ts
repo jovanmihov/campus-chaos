@@ -50,9 +50,17 @@ export default class Computer {
     this.showHealth();
   }
 
+  get destroyed(): boolean {
+    return this.health <= 0;
+  }
+
+  covers(x: number, y: number): boolean {
+    return x >= this.left && x < this.left + this.size && y >= this.top && y < this.top + this.size;
+  }
+
   isHitBy(virus: Virus): boolean {
-    const { x } = virus.tile;
-    return x >= this.left && x < this.left + this.size && virus.y + TILE / 2 >= this.top * TILE;
+    const { x, y } = virus.tile;
+    return this.covers(x, y);
   }
 
   damage(amount: number): void {

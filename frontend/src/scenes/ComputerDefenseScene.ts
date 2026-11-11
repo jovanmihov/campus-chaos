@@ -1,11 +1,17 @@
 import Phaser from 'phaser';
 import Computer from '../entities/Computer';
+import type DefensiveBlock from '../entities/defense/DefensiveBlock';
 import DefensiveBuilding1 from '../entities/defense/DefensiveBuilding1';
+import type Virus from '../entities/Virus';
 import { startAutosave, type Tile } from '../save';
 import BlockPlacer from '../ui/BlockPlacer';
-import { addTextButton, disableTextButton } from '../ui/TextButton';
+import { addTextButton, disableTextButton, enableTextButton } from '../ui/TextButton';
+import { damageRates, msToFirstDeath, SAME_MOMENT_MS } from '../world/targeting';
 import TileGrid, { TILE } from '../world/TileGrid';
 import VirusWave from '../world/VirusWave';
+
+const GAME_OVER_MS = 2500;
+const GAME_OVER_DEPTH = 10;
 
 export default class ComputerDefenseScene extends Phaser.Scene {
   private cols = 0;
@@ -14,6 +20,7 @@ export default class ComputerDefenseScene extends Phaser.Scene {
   private computer!: Computer;
   private wave!: VirusWave;
   private placer!: BlockPlacer;
+  private gameOver = false;
 
   constructor() {
     super('ComputerDefenseScene');
@@ -36,27 +43,79 @@ export default class ComputerDefenseScene extends Phaser.Scene {
       this.scene.start('CampusScene', { tile: this.campusTile })
     );
 
-    const wave = new VirusWave(this, this.cols);
-    this.wave = wave;
-    const waveButton = addTextButton(this, this.scale.width - 8, 8, 'Start wave').setOrigin(1, 0);
-    waveButton.on('pointerdown', () => {
-      wave.start();
-      disableTextButton(waveButton, 'Wave running');
-    });
-
     this.placer = new BlockPlacer(this, tiles, [DefensiveBuilding1]);
+
+    const waveButton = addTextButton(this, this.scale.width - 8, 8, 'Start wave').setOrigin(1, 0);
+    const startWave = (): void => {
+      this.wave.start(this.placer.placed);
+      this.placer.setLocked(true);
+      disableTextButton(waveButton, 'Wave running');
+    };
+    waveButton.on('pointerdown', startWave);
+
+    this.gameOver = false;
+    this.wave = new VirusWave(this, tiles, this.computer, () => {
+      if (this.gameOver) return;
+      this.placer.setLocked(false);
+      enableTextButton(waveButton, 'Start wave').on('pointerdown', startWave);
+    });
   }
 
   update(_time: number, delta: number): void {
-    const viruses = this.wave.viruses;
-    for (const block of this.placer.placed) block.update(delta, viruses);
+    let left = delta;
+    while (left > 0 && !this.gameOver) {
+      const rates = this.damageRates();
+      const toTile = this.wave.msToNextTile();
+      let ms = Math.min(left, toTile, msToFirstDeath(rates, (virus) => virus.healthLeft));
+      if (toTile - ms < SAME_MOMENT_MS) ms = toTile;
+      this.advance(ms, rates);
+      left -= ms;
+    }
+    for (const block of this.placer.placed) block.drawBeam();
+  }
 
-    for (const virus of viruses) {
-      if (virus.alive && this.computer.isHitBy(virus)) {
+  private damageRates(): Map<Virus, number> {
+    const locks: [DefensiveBlock, Virus][] = [];
+    for (const block of this.placer.placed) {
+      const target = block.target;
+      if (target) locks.push([block, target]);
+    }
+    return damageRates(locks, this.wave.viruses.filter((virus) => virus.onBoard));
+  }
+
+  private advance(ms: number, rates: Map<Virus, number>): void {
+    for (const [virus, rate] of rates) virus.damage(rate * ms);
+    this.wave.advance(ms);
+
+    for (const virus of this.wave.viruses) {
+      if (this.computer.isHitBy(virus)) {
         this.computer.damage(virus.attack);
         virus.remove();
       }
     }
+
+    for (const block of this.placer.placed) block.retarget(this.wave.viruses);
+    if (this.computer.destroyed) this.endGame();
+  }
+
+  private endGame(): void {
+    this.gameOver = true;
+    this.wave.stop();
+    this.placer.setLocked(true);
+    for (const block of this.placer.placed) block.stop();
+
+    const { width, height } = this.scale;
+    this.add.rectangle(0, 0, width, height, 0x000000, 0.6).setOrigin(0).setDepth(GAME_OVER_DEPTH).setInteractive();
+    this.add
+      .text(width / 2, height / 2, 'GAME OVER', {
+        fontFamily: 'ui-monospace, Consolas, monospace',
+        fontSize: '32px',
+        color: '#ff5c5c',
+      })
+      .setOrigin(0.5)
+      .setDepth(GAME_OVER_DEPTH);
+
+    this.time.delayedCall(GAME_OVER_MS, () => this.scene.start('CampusScene', { tile: this.campusTile }));
   }
 
   private drawGround(): void {

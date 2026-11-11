@@ -6,6 +6,7 @@ const SLOT_SIZE = 28;
 const PADDING = 4;
 const MARGIN = 8;
 const DEPTH = 7;
+const DISABLED_ALPHA = 0.4;
 
 const PANEL_COLOR = 0x241d3b;
 const BORDER_COLOR = 0x4b3f70;
@@ -17,6 +18,7 @@ export default class Inventory {
   readonly bounds: Phaser.Geom.Rectangle;
   private slots = new Map<DefensiveBlockKind, Phaser.GameObjects.Rectangle>();
   private selected: DefensiveBlockKind | null = null;
+  private parts: Phaser.GameObjects.Rectangle[] = [];
 
   constructor(scene: Phaser.Scene, kinds: DefensiveBlockKind[], onClick: (kind: DefensiveBlockKind) => void) {
     const width = PADDING + kinds.length * (SLOT_SIZE + PADDING);
@@ -25,12 +27,13 @@ export default class Inventory {
     const top = scene.scale.height - MARGIN - height;
     this.bounds = new Phaser.Geom.Rectangle(left, top, width, height);
 
-    scene.add
+    const panel = scene.add
       .rectangle(left, top, width, height, PANEL_COLOR)
       .setOrigin(0)
       .setStrokeStyle(1, BORDER_COLOR)
       .setScrollFactor(0)
       .setDepth(DEPTH);
+    this.parts.push(panel);
 
     kinds.forEach((kind, i) => {
       const x = left + PADDING + i * (SLOT_SIZE + PADDING) + SLOT_SIZE / 2;
@@ -43,11 +46,12 @@ export default class Inventory {
         .setDepth(DEPTH)
         .setInteractive({ useHandCursor: true });
 
-      scene.add
+      const icon = scene.add
         .rectangle(x, y, TILE, TILE, kind.color)
         .setStrokeStyle(1, OUTLINE_COLOR)
         .setScrollFactor(0)
         .setDepth(DEPTH);
+      this.parts.push(slot, icon);
 
       slot.on('pointerover', () => slot.setFillStyle(SLOT_ACTIVE_COLOR));
       slot.on('pointerout', () => this.selected !== kind && slot.setFillStyle(SLOT_COLOR));
@@ -64,6 +68,14 @@ export default class Inventory {
       const isSelected = slotKind === kind;
       slot.setFillStyle(isSelected ? SLOT_ACTIVE_COLOR : SLOT_COLOR);
       slot.setStrokeStyle(1, isSelected ? SELECTED_BORDER_COLOR : BORDER_COLOR);
+    }
+  }
+
+  setEnabled(enabled: boolean): void {
+    for (const part of this.parts) part.setAlpha(enabled ? 1 : DISABLED_ALPHA);
+    for (const slot of this.slots.values()) {
+      if (enabled) slot.setInteractive();
+      else slot.disableInteractive();
     }
   }
 

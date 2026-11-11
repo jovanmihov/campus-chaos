@@ -17,6 +17,8 @@ export default class BlockPlacer {
   private ghost: Phaser.GameObjects.Rectangle;
   private range: Phaser.GameObjects.Graphics;
   private selected: DefensiveBlockKind | null = null;
+  private moving: DefensiveBlock | null = null;
+  private locked = false;
 
   constructor(
     private scene: Phaser.Scene,
@@ -33,12 +35,25 @@ export default class BlockPlacer {
     this.range = scene.add.graphics().setDepth(RANGE_DEPTH).setVisible(false);
 
     scene.input.mouse?.disableContextMenu();
-    scene.input.on('pointermove', (pointer: Phaser.Input.Pointer) => this.moveGhost(pointer));
+    scene.input.on('pointermove', (pointer: Phaser.Input.Pointer) => this.onPointerMove(pointer));
     scene.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => this.onPointerDown(pointer));
     scene.input.keyboard?.on('keydown-ESC', () => this.select(null));
   }
 
+  setLocked(locked: boolean): void {
+    this.locked = locked;
+    if (locked) {
+      this.select(null);
+      this.scene.input.setDefaultCursor('default');
+    }
+    this.inventory.setEnabled(!locked);
+  }
+
   select(kind: DefensiveBlockKind | null): void {
+    this.moving?.setLifted(false);
+    this.moving = null;
+
+    if (this.locked) kind = null;
     this.selected = kind;
     this.inventory.setSelected(kind);
     if (!kind) {
@@ -50,17 +65,50 @@ export default class BlockPlacer {
     this.moveGhost(this.scene.input.activePointer);
   }
 
+  private pickUp(block: DefensiveBlock): void {
+    this.select(block.constructor as DefensiveBlockKind);
+    this.moving = block;
+    block.setLifted(true);
+    this.scene.input.setDefaultCursor('default');
+  }
+
   private onPointerDown(pointer: Phaser.Input.Pointer): void {
-    const kind = this.selected;
-    if (!kind || this.isOverUi(pointer)) return;
+    if (this.locked || this.isOverUi(pointer)) return;
     if (pointer.rightButtonDown()) {
       this.select(null);
       return;
     }
+
     const tile = this.pointerTile(pointer);
-    if (!this.grid.isWalkable(tile.x, tile.y)) return;
-    this.placed.push(new kind(this.scene, this.grid, tile.x, tile.y));
+    const kind = this.selected;
+    if (!kind) {
+      const block = this.blockAt(tile);
+      if (block) this.pickUp(block);
+      return;
+    }
+
+    if (!this.canPlaceAt(tile)) return;
+    if (this.moving) this.moving.moveTo(tile.x, tile.y);
+    else this.placed.push(new kind(this.scene, this.grid, tile.x, tile.y));
     this.select(null);
+  }
+
+  private onPointerMove(pointer: Phaser.Input.Pointer): void {
+    if (this.selected) {
+      this.moveGhost(pointer);
+      return;
+    }
+    const over = !this.locked && !this.isOverUi(pointer) && this.blockAt(this.pointerTile(pointer));
+    this.scene.input.setDefaultCursor(over ? 'pointer' : 'default');
+  }
+
+  private blockAt(tile: Tile): DefensiveBlock | undefined {
+    return this.placed.find((block) => block.tileX === tile.x && block.tileY === tile.y);
+  }
+
+  private canPlaceAt(tile: Tile): boolean {
+    if (this.moving && this.moving.tileX === tile.x && this.moving.tileY === tile.y) return true;
+    return this.grid.isWalkable(tile.x, tile.y);
   }
 
   private drawRange(radius: number): void {
@@ -76,7 +124,7 @@ export default class BlockPlacer {
 
     const visible = !this.isOverUi(pointer);
     const tile = this.pointerTile(pointer);
-    const free = this.grid.isWalkable(tile.x, tile.y);
+    const free = this.canPlaceAt(tile);
 
     this.ghost
       .setVisible(visible)
