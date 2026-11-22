@@ -1,8 +1,9 @@
 import Phaser from 'phaser';
+import { SCALE } from '../display';
 import TileGrid, { TILE, tileCenter } from '../world/TileGrid';
 
 const STEP_MS = 160;                      // time to walk one tile
-const HOP_PX = 2;                         // how far the body lifts mid-step
+const HOP_PX = 2 * SCALE;                        // how far the body lifts mid-step
 const TILT_DEG = 5;                       // sway per step, alternating sides
 const DEPTH = 6;                          // player is above watchers (5) and below UI (7)
 
@@ -28,8 +29,9 @@ export default class Player {
     private tileX: number,
     private tileY: number
   ) {
-    const shadow = scene.add.ellipse(0, 0, 14, 5, 0x000000, 0.4);
-    this.figure = scene.add.sprite(0, 0, 'player', FRAME.front).setOrigin(0.5, 1);
+    const shadow = scene.add.ellipse(0, 0, 14 * SCALE, 5 * SCALE, 0x000000, 0.4);
+    // student.png is old low-res art; drop the scale once it's redrawn at full size
+    this.figure = scene.add.sprite(0, 0, 'player', FRAME.front).setOrigin(0.5, 1).setScale(SCALE);
     this.root = scene.add
       .container(tileCenter(tileX), footY(tileY), [shadow, this.figure])
       .setDepth(DEPTH);

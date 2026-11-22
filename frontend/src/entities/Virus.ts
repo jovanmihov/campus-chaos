@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { SCALE } from '../display';
 import { TILE, tileCenter } from '../world/TileGrid';
 import type { Tile } from '../save';
 
@@ -10,7 +11,7 @@ export const VIRUS_DEAD_AT = 1e-6;
 const BODY_COLOR = 0xffffff;
 const OUTLINE_COLOR = 0x1c172e;
 const HEALTH_COLOR = 0xff3344;
-const HEALTH_BAR_HEIGHT = 2;
+const HEALTH_BAR_HEIGHT = 2 * SCALE;
 const DEPTH = 5;
 
 export default class Virus {
@@ -29,7 +30,7 @@ export default class Virus {
     private readonly spawnMs: number,
     waveMs: number
   ) {
-    this.body = scene.add.rectangle(0, 0, TILE, TILE, BODY_COLOR).setStrokeStyle(1, OUTLINE_COLOR).setDepth(DEPTH);
+    this.body = scene.add.rectangle(0, 0, TILE, TILE, BODY_COLOR).setStrokeStyle(SCALE, OUTLINE_COLOR).setDepth(DEPTH);
 
     this.healthBar = scene.add
       .rectangle(0, 0, TILE, HEALTH_BAR_HEIGHT, HEALTH_COLOR)

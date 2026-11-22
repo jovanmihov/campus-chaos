@@ -7,6 +7,7 @@ import ComputerDefenseScene from './scenes/ComputerDefenseScene';
 import PortalDialog from './ui/PortalDialog';
 import ProbabilityGameDialog from './ui/ProbabilityGameDialog';
 import StatsPanel from './ui/StatsPanel';
+import { TILE } from './world/TileGrid';
 
 // Saves name their scene by key, so every scene a player can be in must be listed here
 const SCENES: Record<string, typeof Phaser.Scene> = { CampusScene, ComputerDefenseScene };
@@ -21,9 +22,8 @@ async function start(): Promise<void> {
   const game = new Phaser.Game({
     type: Phaser.AUTO,
     parent: 'phaser-container',
-    width: 15 * 32,
-    height: 11 * 32,
-    pixelArt: true,
+    width: 30 * TILE,
+    height: 22 * TILE,
     backgroundColor: '#1c172e',
     scale: {
       mode: Phaser.Scale.FIT,

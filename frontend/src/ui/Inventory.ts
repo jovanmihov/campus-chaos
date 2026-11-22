@@ -1,10 +1,11 @@
 import Phaser from 'phaser';
+import { SCALE } from '../display';
 import { OUTLINE_COLOR, type DefensiveBlockKind } from '../entities/defense/DefensiveBlock';
 import { TILE } from '../world/TileGrid';
 
-const SLOT_SIZE = 28;
-const PADDING = 4;
-const MARGIN = 8;
+const SLOT_SIZE = 28 * SCALE;
+const PADDING = 4 * SCALE;
+const MARGIN = 8 * SCALE;
 const DEPTH = 7;
 const DISABLED_ALPHA = 0.4;
 
@@ -30,7 +31,7 @@ export default class Inventory {
     const panel = scene.add
       .rectangle(left, top, width, height, PANEL_COLOR)
       .setOrigin(0)
-      .setStrokeStyle(1, BORDER_COLOR)
+      .setStrokeStyle(SCALE, BORDER_COLOR)
       .setScrollFactor(0)
       .setDepth(DEPTH);
     this.parts.push(panel);
@@ -41,14 +42,14 @@ export default class Inventory {
 
       const slot = scene.add
         .rectangle(x, y, SLOT_SIZE, SLOT_SIZE, SLOT_COLOR)
-        .setStrokeStyle(1, BORDER_COLOR)
+        .setStrokeStyle(SCALE, BORDER_COLOR)
         .setScrollFactor(0)
         .setDepth(DEPTH)
         .setInteractive({ useHandCursor: true });
 
       const icon = scene.add
         .rectangle(x, y, TILE, TILE, kind.color)
-        .setStrokeStyle(1, OUTLINE_COLOR)
+        .setStrokeStyle(SCALE, OUTLINE_COLOR)
         .setScrollFactor(0)
         .setDepth(DEPTH);
       this.parts.push(slot, icon);
@@ -67,7 +68,7 @@ export default class Inventory {
     for (const [slotKind, slot] of this.slots) {
       const isSelected = slotKind === kind;
       slot.setFillStyle(isSelected ? SLOT_ACTIVE_COLOR : SLOT_COLOR);
-      slot.setStrokeStyle(1, isSelected ? SELECTED_BORDER_COLOR : BORDER_COLOR);
+      slot.setStrokeStyle(SCALE, isSelected ? SELECTED_BORDER_COLOR : BORDER_COLOR);
     }
   }
 

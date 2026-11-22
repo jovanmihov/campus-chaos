@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { keepPixelated, SCALE } from '../display';
 import Player from '../entities/Player';
 import Portal from '../entities/Portal';
 import ProbabilityBlock from '../entities/ProbabilityBlock';
@@ -41,8 +42,13 @@ export default class CampusScene extends Phaser.Scene {
 
   create(): void {
     // --- 1. The map image ---
-    const bg = this.add.image(0, 0, 'map').setOrigin(0, 0);
-    const tiles = new TileGrid(Math.floor(bg.width / TILE), Math.floor(bg.height / TILE));
+    // The map and player are old low-res art: scale them up but keep their pixels sharp
+    keepPixelated(this, 'map');
+    keepPixelated(this, 'player');
+    const bg = this.add.image(0, 0, 'map').setOrigin(0, 0).setScale(SCALE);
+    const mapWidth = bg.displayWidth;
+    const mapHeight = bg.displayHeight;
+    const tiles = new TileGrid(Math.floor(mapWidth / TILE), Math.floor(mapHeight / TILE));
 
     // --- 2. Solid tiles (example: a building at x 10-14, y 4-7) ---
     for (let x = 10; x <= 14; x++) {
@@ -53,7 +59,7 @@ export default class CampusScene extends Phaser.Scene {
 
     // --- 3. Debug grid: shows tile coordinates; delete when done ---
     this.add
-      .grid(0, 0, bg.width, bg.height, TILE, TILE)
+      .grid(0, 0, mapWidth, mapHeight, TILE, TILE)
       .setOrigin(0, 0)
       .setOutlineStyle(0xffffff, 0.3);
 
@@ -70,7 +76,7 @@ export default class CampusScene extends Phaser.Scene {
 
     // --- 6. Camera ---
     const cam = this.cameras.main;
-    cam.setBounds(0, 0, bg.width, bg.height);
+    cam.setBounds(0, 0, mapWidth, mapHeight);
     cam.startFollow(this.player.root, true);
 
     // --- 7. Input ---
@@ -86,7 +92,7 @@ export default class CampusScene extends Phaser.Scene {
     });
 
     // --- 8. Minimap ---
-    //this.minimap = new Minimap(this, 'map', this.player.root);
+    //this.minimap = new Minimap(this, bg, this.player.root);
   }
 
   update(): void {

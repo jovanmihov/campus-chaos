@@ -1,8 +1,9 @@
 import Phaser from 'phaser';
+import { SCALE } from '../display';
 
-const WIDTH = 120;                        // minimap width in game pixels; height follows the map's aspect ratio
-const MARGIN = 6;                         // gap from the screen's top-right corner
-const BORDER = 2;
+const WIDTH = 120 * SCALE;                // minimap width in game pixels; height follows the map's aspect ratio
+const MARGIN = 6 * SCALE;                 // gap from the screen's top-right corner
+const BORDER = 2 * SCALE;
 const TEXTURE = 'minimap';
 
 /** A shrunken copy of the map in the top-right corner, with the player and the camera's view drawn on it. */
@@ -14,14 +15,15 @@ export default class Minimap {
 
   constructor(
     private scene: Phaser.Scene,
-    mapKey: string,
+    map: Phaser.GameObjects.Image,
     private target: { x: number; y: number }
   ) {
-    const source = scene.textures.get(mapKey).getSourceImage() as HTMLImageElement;
-    this.scale = WIDTH / source.width;
-    const height = Math.round(source.height * this.scale);
+    const source = map.texture.getSourceImage() as HTMLImageElement;
+    // World pixels to minimap pixels; the map image may be drawn scaled up
+    this.scale = WIDTH / map.displayWidth;
+    const height = Math.round(map.displayHeight * this.scale);
 
-    // pixelArt mode samples nearest-neighbour, which turns a big shrink into noise,
+    // Sampling a big shrink on the GPU turns it into noise (worse if the map is kept pixelated),
     // so let the browser downscale the map smoothly once into its own texture
     if (!scene.textures.exists(TEXTURE)) {
       const texture = scene.textures.createCanvas(TEXTURE, WIDTH, height)!;
@@ -55,12 +57,12 @@ export default class Minimap {
 
     this.overlay
       .clear()
-      .lineStyle(1, 0xffffff, 0.8)
-      .strokeRect(vx + 0.5, vy + 0.5, vw - 1, vh - 1)
+      .lineStyle(SCALE, 0xffffff, 0.8)
+      .strokeRect(vx + SCALE / 2, vy + SCALE / 2, vw - SCALE, vh - SCALE)
       // Dark outline keeps the dot visible on grass, roofs and roads alike
       .fillStyle(0x1c172e)
-      .fillRect(px - 2, py - 2, 5, 5)
+      .fillCircle(px, py, 2.5 * SCALE)
       .fillStyle(0xffd23f)
-      .fillRect(px - 1, py - 1, 3, 3);
+      .fillCircle(px, py, 1.5 * SCALE);
   }
 }

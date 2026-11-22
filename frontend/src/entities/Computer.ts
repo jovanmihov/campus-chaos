@@ -1,11 +1,12 @@
 import Phaser from 'phaser';
+import { SCALE } from '../display';
 import TileGrid, { TILE } from '../world/TileGrid';
 import type Virus from './Virus';
 
 const BODY_COLOR = 0x000000;
 const OUTLINE_COLOR = 0x1c172e;
 const HEALTH_COLOR = 0xff3344;
-const HEALTH_BAR_HEIGHT = 3;
+const HEALTH_BAR_HEIGHT = 3 * SCALE;
 const MAX_HEALTH = 100;
 const DEPTH = 5;
 
@@ -31,7 +32,7 @@ export default class Computer {
     scene.add
       .rectangle(this.left * TILE, this.top * TILE, this.size * TILE, this.size * TILE, BODY_COLOR)
       .setOrigin(0)
-      .setStrokeStyle(1, OUTLINE_COLOR)
+      .setStrokeStyle(SCALE, OUTLINE_COLOR)
       .setDepth(DEPTH);
 
     this.healthBar = scene.add
@@ -42,7 +43,7 @@ export default class Computer {
     this.healthText = scene.add
       .text((this.left + this.size / 2) * TILE, (this.top + this.size / 2) * TILE, '', {
         fontFamily: 'monospace',
-        fontSize: '10px',
+        fontSize: `${10 * SCALE}px`,
         color: '#ffffff',
       })
       .setOrigin(0.5)

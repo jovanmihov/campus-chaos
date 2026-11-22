@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { SCALE } from '../display';
 import TileGrid, { TILE } from '../world/TileGrid';
 
 export interface VisionRayOptions {
@@ -81,9 +82,9 @@ export default class VisionRay {
     const color = this.seen ? SEEN_COLOR : this.color;
     this.gfx
       .clear()
-      .lineStyle(1, color, 0.9)
+      .lineStyle(0.75 * SCALE, color, 0.9)
       .lineBetween(from.x, from.y, to.x, to.y)
       .fillStyle(color, 1)
-      .fillCircle(to.x, to.y, 1.5);
+      .fillCircle(to.x, to.y, 1.5 * SCALE);
   }
 }

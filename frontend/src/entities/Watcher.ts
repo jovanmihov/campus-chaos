@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { SCALE } from '../display';
 import VisionRay, { VisionRayOptions } from '../components/VisionRay';
 import TileGrid, { TILE, tileCenter } from '../world/TileGrid';
 
@@ -19,7 +20,7 @@ export default class Watcher {
     const y = tileCenter(tileY);
     this.body = scene.add
       .rectangle(x, y, TILE, TILE, BODY_COLOR)
-      .setStrokeStyle(1, OUTLINE_COLOR)
+      .setStrokeStyle(SCALE, OUTLINE_COLOR)
       .setDepth(5);
     this.vision = new VisionRay(scene, grid, () => ({ x, y }), vision);
   }

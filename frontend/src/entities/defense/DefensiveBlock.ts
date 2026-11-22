@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { SCALE } from '../../display';
 import LaserBeam from '../../components/LaserBeam';
 import { canShoot, closestTarget } from '../../world/targeting';
 import TileGrid, { TILE, tileCenter } from '../../world/TileGrid';
@@ -37,7 +38,7 @@ export default abstract class DefensiveBlock {
 
     this.body = scene.add
       .rectangle(tileCenter(_tileX), tileCenter(_tileY), TILE, TILE, color)
-      .setStrokeStyle(1, OUTLINE_COLOR)
+      .setStrokeStyle(SCALE, OUTLINE_COLOR)
       .setDepth(DEPTH);
     this.beam = new LaserBeam(scene, color);
   }

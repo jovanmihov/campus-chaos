@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { SCALE } from '../display';
 
 const DEPTH = 7;
 const BACKGROUND = '#241d3b';
@@ -6,10 +7,10 @@ const BACKGROUND_HOVER = '#4b3f70';
 
 const STYLE: Phaser.Types.GameObjects.Text.TextStyle = {
   fontFamily: 'ui-monospace, Consolas, monospace',
-  fontSize: '12px',
+  fontSize: `${12 * SCALE}px`,
   color: '#e8e4f5',
   backgroundColor: BACKGROUND,
-  padding: { x: 6, y: 4 },
+  padding: { x: 6 * SCALE, y: 4 * SCALE },
 };
 
 export function addTextButton(scene: Phaser.Scene, x: number, y: number, label: string): Phaser.GameObjects.Text {

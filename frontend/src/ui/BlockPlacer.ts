@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { SCALE } from '../display';
 import DefensiveBlock, { OUTLINE_COLOR, type DefensiveBlockKind } from '../entities/defense/DefensiveBlock';
 import type { Tile } from '../save';
 import TileGrid, { circleOffsets, TILE, tileCenter } from '../world/TileGrid';
@@ -29,7 +30,7 @@ export default class BlockPlacer {
 
     this.ghost = scene.add
       .rectangle(0, 0, TILE, TILE)
-      .setStrokeStyle(1, OUTLINE_COLOR, 0.6)
+      .setStrokeStyle(SCALE, OUTLINE_COLOR, 0.6)
       .setDepth(GHOST_DEPTH)
       .setVisible(false);
     this.range = scene.add.graphics().setDepth(RANGE_DEPTH).setVisible(false);

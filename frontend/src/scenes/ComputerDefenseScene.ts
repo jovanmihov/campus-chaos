@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { SCALE } from '../display';
 import Computer from '../entities/Computer';
 import type DefensiveBlock from '../entities/defense/DefensiveBlock';
 import DefensiveBuilding1 from '../entities/defense/DefensiveBuilding1';
@@ -39,13 +40,13 @@ export default class ComputerDefenseScene extends Phaser.Scene {
 
     startAutosave(() => ({ scene: this.scene.key, position: this.campusTile ?? { x: -1, y: -1 } }));
 
-    addTextButton(this, 8, 8, '< Back to campus').on('pointerdown', () =>
+    addTextButton(this, 8 * SCALE, 8 * SCALE, '< Back to campus').on('pointerdown', () =>
       this.scene.start('CampusScene', { tile: this.campusTile })
     );
 
     this.placer = new BlockPlacer(this, tiles, [DefensiveBuilding1]);
 
-    const waveButton = addTextButton(this, this.scale.width - 8, 8, 'Start wave').setOrigin(1, 0);
+    const waveButton = addTextButton(this, this.scale.width - 8 * SCALE, 8 * SCALE, 'Start wave').setOrigin(1, 0);
     const startWave = (): void => {
       this.wave.start(this.placer.placed);
       this.placer.setLocked(true);
@@ -109,7 +110,7 @@ export default class ComputerDefenseScene extends Phaser.Scene {
     this.add
       .text(width / 2, height / 2, 'GAME OVER', {
         fontFamily: 'ui-monospace, Consolas, monospace',
-        fontSize: '32px',
+        fontSize: `${32 * SCALE}px`,
         color: '#ff5c5c',
       })
       .setOrigin(0.5)
@@ -131,7 +132,7 @@ export default class ComputerDefenseScene extends Phaser.Scene {
 
     for (let i = 0; i < this.cols * this.rows; i++) {
       const color = Phaser.Display.Color.HSLToColor(rnd(0.25, 0.38), rnd(0.4, 0.7), rnd(0.2, 0.5));
-      const size = Phaser.Math.Between(1, 3);
+      const size = Phaser.Math.Between(1, 3) * SCALE;
       gfx
         .fillStyle(color.color, 0.8)
         .fillRect(rnd(0, this.cols * TILE), rnd(0, this.rows * TILE), size, size);

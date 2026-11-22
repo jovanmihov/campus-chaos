@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { SCALE } from '../display';
 import type { Tile } from '../save';
 import TileGrid, { TILE, tileCenter } from '../world/TileGrid';
 
@@ -18,7 +19,7 @@ export default class Portal {
 
     scene.add
       .rectangle(tileCenter(tileX), tileCenter(tileY), TILE, TILE, BODY_COLOR)
-      .setStrokeStyle(1, OUTLINE_COLOR)
+      .setStrokeStyle(SCALE, OUTLINE_COLOR)
       .setDepth(5);
   }
 

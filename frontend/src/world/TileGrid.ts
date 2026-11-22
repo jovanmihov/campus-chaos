@@ -1,4 +1,6 @@
-export const TILE = 16;
+import { SCALE } from '../display';
+
+export const TILE = 16 * SCALE;
 
 export function tileCenter(t: number): number {
   return t * TILE + TILE / 2;
