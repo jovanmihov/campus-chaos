@@ -26,7 +26,7 @@ export default function PortalDialog() {
         <h2 className="probability-dialog__title">A strange square</h2>
         {/* Filler text until the real dialog is written */}
         <p className="probability-dialog__text">
-          Lorem ipsum dolor sit amet. The square hums quietly. Something green waits on the other side.
+          Lorem ipsum dolor sit amet. The square hums quietly. {dialog.glimpse}
         </p>
         <div className="portal-dialog__actions">
           <button className="probability-dialog__button" type="button" onClick={closePortalDialog}>

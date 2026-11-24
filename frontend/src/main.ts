@@ -4,13 +4,14 @@ import { createRoot } from 'react-dom/client';
 import { loadGame, type LoadedGame } from './save';
 import CampusScene from './scenes/CampusScene';
 import ComputerDefenseScene from './scenes/ComputerDefenseScene';
+import GrayDimensionScene from './scenes/GrayDimensionScene';
 import PortalDialog from './ui/PortalDialog';
 import ProbabilityGameDialog from './ui/ProbabilityGameDialog';
 import StatsPanel from './ui/StatsPanel';
 import { TILE } from './world/TileGrid';
 
 // Saves name their scene by key, so every scene a player can be in must be listed here
-const SCENES: Record<string, typeof Phaser.Scene> = { CampusScene, ComputerDefenseScene };
+const SCENES: Record<string, typeof Phaser.Scene> = { CampusScene, ComputerDefenseScene, GrayDimensionScene };
 const FIRST_SCENE = 'CampusScene';
 
 async function start(): Promise<void> {

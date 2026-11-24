@@ -1,4 +1,4 @@
-export type PortalDialogState = { isOpen: false } | { isOpen: true; onEnter: () => void };
+export type PortalDialogState = { isOpen: false } | { isOpen: true; glimpse: string; onEnter: () => void };
 
 let state: PortalDialogState = { isOpen: false };
 
@@ -24,8 +24,8 @@ export function isPortalDialogOpen(): boolean {
   return state.isOpen;
 }
 
-export function openPortalDialog(onEnter: () => void): void {
-  setState({ isOpen: true, onEnter });
+export function openPortalDialog(glimpse: string, onEnter: () => void): void {
+  setState({ isOpen: true, glimpse, onEnter });
 }
 
 export function closePortalDialog(): void {

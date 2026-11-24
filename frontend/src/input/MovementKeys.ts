@@ -1,37 +1,51 @@
 import Phaser from 'phaser';
 
 type Direction = 'up' | 'down' | 'left' | 'right';
+const DIRECTIONS: Direction[] = ['up', 'down', 'left', 'right'];
 
 export default class MovementKeys {
-  private cursors: Phaser.Types.Input.Keyboard.CursorKeys;
-  private wasd: Record<Direction, Phaser.Input.Keyboard.Key>;
+  private keys = {} as Record<Direction, Phaser.Input.Keyboard.Key[]>;
+  // A press counts until a step uses it, so a quick tap still moves the player
+  private tapped = new Set<Direction>();
 
   constructor(scene: Phaser.Scene) {
     if (!scene.input.keyboard) {
       throw new Error('Keyboard input not available');
     }
-    this.cursors = scene.input.keyboard.createCursorKeys();
-    this.wasd = scene.input.keyboard.addKeys({
+    const cursors = scene.input.keyboard.createCursorKeys();
+    const wasd = scene.input.keyboard.addKeys({
       up: Phaser.Input.Keyboard.KeyCodes.W,
       left: Phaser.Input.Keyboard.KeyCodes.A,
       down: Phaser.Input.Keyboard.KeyCodes.S,
       right: Phaser.Input.Keyboard.KeyCodes.D,
     }) as Record<Direction, Phaser.Input.Keyboard.Key>;
+
+    for (const dir of DIRECTIONS) {
+      this.keys[dir] = [cursors[dir], wasd[dir]];
+      for (const key of this.keys[dir]) key.on('down', () => this.tapped.add(dir));
+    }
   }
 
   /** -1, 0 or 1 on each axis */
   direction(): { dx: number; dy: number } {
     // Axes are read independently so two keys combine into a diagonal
-    let dx = 0;
-    let dy = 0;
-    if (this.isDown('left')) dx -= 1;
-    if (this.isDown('right')) dx += 1;
-    if (this.isDown('up')) dy -= 1;
-    if (this.isDown('down')) dy += 1;
-    return { dx, dy };
+    return { dx: this.axis('left', 'right'), dy: this.axis('up', 'down') };
   }
 
-  private isDown(dir: Direction): boolean {
-    return this.cursors[dir].isDown || this.wasd[dir].isDown;
+  consumeTaps(): void {
+    this.tapped.clear();
+  }
+
+  private axis(negative: Direction, positive: Direction): number {
+    const neg = this.pressedAt(negative);
+    const pos = this.pressedAt(positive);
+    if (neg === null && pos === null) return 0;
+    return (pos ?? -Infinity) > (neg ?? -Infinity) ? 1 : -1;
+  }
+
+  private pressedAt(dir: Direction): number | null {
+    const keys = this.keys[dir];
+    if (!this.tapped.has(dir) && !keys.some((key) => key.isDown)) return null;
+    return Math.max(...keys.map((key) => key.timeDown));
   }
 }

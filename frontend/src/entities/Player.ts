@@ -41,18 +41,14 @@ export default class Player {
     return { x: this.tileX, y: this.tileY };
   }
 
-  /** Take one step, unless a step is already in progress. */
-  walk(dx: number, dy: number): void {
-    if (this.moving) return;
-    if (dx === 0 && dy === 0) return;
+  walk(dx: number, dy: number): boolean {
+    if (this.moving || (dx === 0 && dy === 0)) return false;
 
-    // Diagonal blocked? Slide along whichever axis is still free.
-    if (this.tryMove(dx, dy)) return;
-    if (dx !== 0 && dy !== 0) {
-      if (this.tryMove(dx, 0) || this.tryMove(0, dy)) return;
-    }
+    const dir = this.pickStep(this.tileX, this.tileY, dx, dy);
+    if (dir) this.startStep(dir.dx, dir.dy);
     // Fully blocked: still turn toward where the player pushed
-    this.face(dx, dy);
+    else this.face(dx, dy);
+    return true;
   }
 
   /** Pick the frame for a direction; left-facing views are the right-facing ones mirrored. */
@@ -65,31 +61,37 @@ export default class Player {
     if (dx !== 0) this.figure.setFlipX(dx < 0);
   }
 
-  private tryMove(dx: number, dy: number): boolean {
-    const nx = this.tileX + dx;
-    const ny = this.tileY + dy;
-
-    if (!this.grid.isWalkable(nx, ny)) return false;
-    // No cutting corners: a diagonal step needs both side tiles free
+  private pickStep(x: number, y: number, dx: number, dy: number): { dx: number; dy: number } | null {
+    if (this.canStep(x, y, dx, dy)) return { dx, dy };
     if (dx !== 0 && dy !== 0) {
-      if (!this.grid.isWalkable(nx, this.tileY) || !this.grid.isWalkable(this.tileX, ny)) return false;
+      if (this.canStep(x, y, dx, 0)) return { dx, dy: 0 };
+      if (this.canStep(x, y, 0, dy)) return { dx: 0, dy };
     }
+    return null;
+  }
 
+  private canStep(x: number, y: number, dx: number, dy: number): boolean {
+    if (!this.grid.isWalkable(x + dx, y + dy)) return false;
+    if (dx !== 0 && dy !== 0) return this.grid.isWalkable(x + dx, y) && this.grid.isWalkable(x, y + dy);
+    return true;
+  }
+
+  private startStep(dx: number, dy: number): void {
     this.moving = true;
-    this.tileX = nx;
-    this.tileY = ny;
+    this.tileX += dx;
+    this.tileY += dy;
     this.face(dx, dy);
     this.stepSide = -this.stepSide;
 
     this.scene.tweens.add({
       targets: this.root,
-      x: tileCenter(nx),
-      y: footY(ny),
+      x: tileCenter(this.tileX),
+      y: footY(this.tileY),
       // Diagonal covers √2 tiles, so stretch the time to keep speed constant
       duration: STEP_MS * Math.hypot(dx, dy),
       // Hop and lean mid-step, swaying to the other side each step like footsteps
-      onUpdate: (tween) => {
-        const lift = Math.sin(tween.progress * Math.PI);
+      onUpdate: (tw) => {
+        const lift = Math.sin(tw.progress * Math.PI);
         this.figure.y = -lift * HOP_PX;
         this.figure.angle = lift * TILT_DEG * this.stepSide;
       },
@@ -98,6 +100,5 @@ export default class Player {
         this.moving = false;
       },
     });
-    return true;
   }
 }

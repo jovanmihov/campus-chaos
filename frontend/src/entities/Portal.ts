@@ -4,7 +4,7 @@ import type { Tile } from '../save';
 import TileGrid, { TILE, tileCenter } from '../world/TileGrid';
 
 // Placeholder look until it gets real art
-const BODY_COLOR = 0x3fc8ff;
+const DEFAULT_COLOR = 0x3fc8ff;
 const OUTLINE_COLOR = 0x1c172e;
 
 /** A solid one-tile square that the player walks up to in order to go to another scene. */
@@ -13,12 +13,13 @@ export default class Portal {
     scene: Phaser.Scene,
     grid: TileGrid,
     private tileX: number,
-    private tileY: number
+    private tileY: number,
+    color = DEFAULT_COLOR
   ) {
     grid.block(tileX, tileY);
 
     scene.add
-      .rectangle(tileCenter(tileX), tileCenter(tileY), TILE, TILE, BODY_COLOR)
+      .rectangle(tileCenter(tileX), tileCenter(tileY), TILE, TILE, color)
       .setStrokeStyle(SCALE, OUTLINE_COLOR)
       .setDepth(5);
   }

@@ -15,6 +15,8 @@ const SPAWN: Tile = { x: 65, y: 38 };
 const WATCHER_TILE: Tile = { x: SPAWN.x - 3, y: SPAWN.y };
 const PROBABILITY_BLOCK_TILE: Tile = { x: SPAWN.x, y: SPAWN.y - 3 };
 const PORTAL_TILE: Tile = { x: SPAWN.x + 3, y: SPAWN.y };
+const GRAY_PORTAL_TILE: Tile = { x: PROBABILITY_BLOCK_TILE.x, y: PROBABILITY_BLOCK_TILE.y + 6 };
+const GRAY_PORTAL_COLOR = 0x8a8a8a;
 
 /** True while a dialog is up, so the player shouldn't move or start anything else. */
 function isDialogOpen(): boolean {
@@ -67,6 +69,7 @@ export default class CampusScene extends Phaser.Scene {
     new Watcher(this, tiles, WATCHER_TILE.x, WATCHER_TILE.y, { facingDeg: 270, watch: () => this.player.tile });
     const probabilityBlock = new ProbabilityBlock(this, tiles, PROBABILITY_BLOCK_TILE.x, PROBABILITY_BLOCK_TILE.y);
     const portal = new Portal(this, tiles, PORTAL_TILE.x, PORTAL_TILE.y);
+    const grayPortal = new Portal(this, tiles, GRAY_PORTAL_TILE.x, GRAY_PORTAL_TILE.y, GRAY_PORTAL_COLOR);
 
     // --- 5. Player: resumes from the save, unless the map changed and that tile is now solid ---
     const saved = this.savedTile;
@@ -87,7 +90,13 @@ export default class CampusScene extends Phaser.Scene {
       if (probabilityBlock.isNextTo(tile)) {
         startProbabilityGame();
       } else if (portal.isNextTo(tile)) {
-        openPortalDialog(() => this.scene.start('ComputerDefenseScene', { campusTile: this.player.tile }));
+        openPortalDialog('Something green waits on the other side.', () =>
+          this.scene.start('ComputerDefenseScene', { campusTile: this.player.tile })
+        );
+      } else if (grayPortal.isNextTo(tile)) {
+        openPortalDialog('Something gray waits on the other side.', () =>
+          this.scene.start('GrayDimensionScene', { campusTile: this.player.tile })
+        );
       }
     });
 
@@ -96,9 +105,11 @@ export default class CampusScene extends Phaser.Scene {
   }
 
   update(): void {
-    if (!isDialogOpen()) {
+    if (isDialogOpen()) {
+      this.keys.consumeTaps();
+    } else {
       const { dx, dy } = this.keys.direction();
-      this.player.walk(dx, dy);
+      if (this.player.walk(dx, dy)) this.keys.consumeTaps();
     }
     if (this.minimap) this.minimap.update();
   }
