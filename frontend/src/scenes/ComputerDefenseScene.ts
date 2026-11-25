@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { SCALE } from '../display';
+import { keepPixelated, SCALE } from '../display';
 import Computer from '../entities/Computer';
 import type DefensiveBlock from '../entities/defense/DefensiveBlock';
 import DefensiveBuilding1 from '../entities/defense/DefensiveBuilding1';
@@ -31,7 +31,15 @@ export default class ComputerDefenseScene extends Phaser.Scene {
     this.campusTile = data.campusTile ?? data.tile;
   }
 
+  preload(): void {
+    this.load.spritesheet('cannon', 'assets/defense/cannon.png', { frameWidth: 16, frameHeight: 16 });
+  }
+
   create(): void {
+    keepPixelated(this, 'cannon');
+    if (!this.anims.exists('cannon')) {
+      this.anims.create({ key: 'cannon', frames: this.anims.generateFrameNumbers('cannon'), frameRate: 12, repeat: -1 });
+    }
     this.cols = Math.floor(this.scale.width / TILE);
     this.rows = Math.floor(this.scale.height / TILE);
     const tiles = new TileGrid(this.cols, this.rows);

@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { SCALE } from '../display';
-import { OUTLINE_COLOR, type DefensiveBlockKind } from '../entities/defense/DefensiveBlock';
+import { type DefensiveBlockKind } from '../entities/defense/DefensiveBlock';
 import { TILE } from '../world/TileGrid';
 
 const SLOT_SIZE = 28 * SCALE;
@@ -19,7 +19,7 @@ export default class Inventory {
   readonly bounds: Phaser.Geom.Rectangle;
   private slots = new Map<DefensiveBlockKind, Phaser.GameObjects.Rectangle>();
   private selected: DefensiveBlockKind | null = null;
-  private parts: Phaser.GameObjects.Rectangle[] = [];
+  private parts: (Phaser.GameObjects.Rectangle | Phaser.GameObjects.Image)[] = [];
 
   constructor(scene: Phaser.Scene, kinds: DefensiveBlockKind[], onClick: (kind: DefensiveBlockKind) => void) {
     const width = PADDING + kinds.length * (SLOT_SIZE + PADDING);
@@ -48,8 +48,8 @@ export default class Inventory {
         .setInteractive({ useHandCursor: true });
 
       const icon = scene.add
-        .rectangle(x, y, TILE, TILE, kind.color)
-        .setStrokeStyle(SCALE, OUTLINE_COLOR)
+        .image(x, y, kind.texture, 0)
+        .setDisplaySize(TILE, TILE)
         .setScrollFactor(0)
         .setDepth(DEPTH);
       this.parts.push(slot, icon);

@@ -1,5 +1,4 @@
 import Phaser from 'phaser';
-import { SCALE } from '../../display';
 import LaserBeam from '../../components/LaserBeam';
 import { canShoot, closestTarget } from '../../world/targeting';
 import TileGrid, { TILE, tileCenter } from '../../world/TileGrid';
@@ -18,11 +17,13 @@ export interface DefensiveBlockStats {
 export interface DefensiveBlockKind {
   readonly stats: DefensiveBlockStats;
   readonly color: number;
+  /** Spritesheet key; the animation with the same key plays while the block is shooting. */
+  readonly texture: string;
   new (scene: Phaser.Scene, grid: TileGrid, tileX: number, tileY: number): DefensiveBlock;
 }
 
 export default abstract class DefensiveBlock {
-  protected readonly body: Phaser.GameObjects.Rectangle;
+  protected readonly body: Phaser.GameObjects.Sprite;
   private beam: LaserBeam;
   private lockedOn: Virus | null = null;
 
@@ -32,13 +33,14 @@ export default abstract class DefensiveBlock {
     private _tileX: number,
     private _tileY: number,
     readonly stats: DefensiveBlockStats,
-    color: number
+    color: number,
+    private readonly texture: string
   ) {
     grid.block(_tileX, _tileY);
 
     this.body = scene.add
-      .rectangle(tileCenter(_tileX), tileCenter(_tileY), TILE, TILE, color)
-      .setStrokeStyle(SCALE, OUTLINE_COLOR)
+      .sprite(tileCenter(_tileX), tileCenter(_tileY), texture, 0)
+      .setDisplaySize(TILE, TILE)
       .setDepth(DEPTH);
     this.beam = new LaserBeam(scene, color);
   }
@@ -75,12 +77,18 @@ export default abstract class DefensiveBlock {
 
   drawBeam(): void {
     const target = this.target;
-    if (target) this.beam.aim(this.body, target);
-    else this.beam.off();
+    if (target) {
+      this.beam.aim(this.body, target);
+      this.body.play(this.texture, true);
+    } else {
+      this.beam.off();
+      this.body.stop().setFrame(0);
+    }
   }
 
   stop(): void {
     this.lockedOn = null;
     this.beam.off();
+    this.body.stop().setFrame(0);
   }
 }
