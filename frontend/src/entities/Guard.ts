@@ -83,7 +83,8 @@ export default class Guard {
   private drawCone(): void {
     const eye = { x: this.body.root.x, y: this.body.root.y - TILE / 2 };   // root is at the feet
     const target = this.watch();
-    this.seen = false;
+    const here = this.body.tile;
+    this.seen = target.x === here.x && target.y === here.y;   // rays skip their start tile
     const points: Pt[] = [eye];
     for (let a = -FOV / 2; a <= FOV / 2 + 1e-6; a += RAY_GAP) {
       points.push(
