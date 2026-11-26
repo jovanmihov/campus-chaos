@@ -23,10 +23,44 @@
 .stats-panel__code {
   display: flex;
   justify-content: space-between;
-  margin: auto 0 0;
+  margin: 0;
   padding-top: 12px;
   font-size: 13px;
   color: #a79fc4;
+}
+
+/* Pushes the scene controls and player code to the bottom together */
+.stats-panel__controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.stats-panel__readout {
+  margin: 0;
+  font-size: 13px;
+}
+
+.stats-panel__button {
+  padding: 6px 12px;
+  background-color: #3a3058;
+  border: 2px solid #a79fc4;
+  color: #e8e4f5;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.stats-panel__button:hover:enabled,
+.stats-panel__button:focus-visible {
+  background-color: #4b3f70;
+  outline: none;
+}
+
+.stats-panel__button:disabled {
+  opacity: 0.6;
+  cursor: default;
 }
 
 .stats-panel__code-value {

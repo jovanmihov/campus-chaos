@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react';
+import { getSceneControls, subscribeSceneControls } from '../sceneControls';
 import { getStats, subscribeStats, type Stat } from '../stats';
 import './StatsPanel.css';
 
@@ -8,6 +9,7 @@ interface StatsPanelProps {
 
 export default function StatsPanel({ playerCode }: StatsPanelProps) {
   const stats = useSyncExternalStore(subscribeStats, getStats);
+  const controls = useSyncExternalStore(subscribeSceneControls, getSceneControls);
 
   return (
     <aside className="stats-panel">
@@ -15,6 +17,24 @@ export default function StatsPanel({ playerCode }: StatsPanelProps) {
       {stats.map((stat) => (
         <StatBar key={stat.key} label={stat.label} value={stat.value} max={stat.max} />
       ))}
+      <div className="stats-panel__controls">
+        {controls.map(({ label, onClick, disabled }) =>
+          onClick ? (
+            <button
+              key={label}
+              className="stats-panel__button"
+              type="button"
+              disabled={disabled}
+              onClick={onClick}
+              onMouseDown={(event) => event.preventDefault()}
+            >
+              {label}
+            </button>
+          ) : (
+            <p key={label} className="stats-panel__readout">{label}</p>
+          )
+        )}
+      </div>
       {playerCode && (
         <p className="stats-panel__code">
           <span>Player code</span>
