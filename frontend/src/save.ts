@@ -9,7 +9,8 @@ const AUTOSAVE_MS = 15_000;
 const REQUEST_TIMEOUT_MS = 3_000;
 
 if (!API_URL) {
-  throw new Error('VITE_API_URL is not set. Copy frontend/.env.example to frontend/.env.');
+  // Static hosts like GitHub Pages have no backend, so the game still runs with browser-only saves
+  console.warn('VITE_API_URL is not set, so saves stay in this browser. Copy frontend/.env.example to frontend/.env.');
 }
 
 export interface Tile {
@@ -41,6 +42,7 @@ let canSave = false;
 
 /** Resolves to null instead of rejecting when the backend can't be reached. */
 function request(path: string, init: RequestInit = {}): Promise<Response | null> {
+  if (!API_URL) return Promise.resolve(null);
   return fetch(`${API_URL}${path}`, {
     ...init,
     headers: {
