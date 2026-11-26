@@ -19,7 +19,7 @@ function footY(t: number): number {
 export default class Player {
   /** Ground position (feet). The camera follows this, so it doesn't bob with each hop. */
   readonly root: Phaser.GameObjects.Container;
-  private figure: Phaser.GameObjects.Sprite;
+  readonly figure: Phaser.GameObjects.Sprite;
   private moving = false;
   private stepSide = 1;
 

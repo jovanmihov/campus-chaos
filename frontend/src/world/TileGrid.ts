@@ -50,7 +50,8 @@ export default class TileGrid {
     y0: number,
     angle: number,
     maxDist: number,
-    onTile?: (x: number, y: number) => void
+    onTile?: (x: number, y: number) => void,
+    seeThrough: (x: number, y: number) => boolean = (x, y) => this.isWalkable(x, y)
   ): { x: number; y: number } {
     const dx = Math.cos(angle);
     const dy = Math.sin(angle);
@@ -82,7 +83,7 @@ export default class TileGrid {
         dist = maxDist;
         break;
       }
-      if (!this.isWalkable(tx, ty)) break;   // solid tiles block sight as well as walking
+      if (!seeThrough(tx, ty)) break;
       onTile?.(tx, ty);
     }
     return { x: x0 + dx * dist, y: y0 + dy * dist };

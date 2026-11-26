@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { keepPixelated, SCALE } from '../display';
+import Guard from '../entities/Guard';
 import Player from '../entities/Player';
 import MovementKeys from '../input/MovementKeys';
 import { startAutosave, type Tile } from '../save';
@@ -50,10 +51,34 @@ if (MAP.some((row) => row.length !== MAP[0].length || [...row].some((c) => !(c i
   throw new Error('Gray dimension MAP rows must be equal length and use only known tiles');
 }
 
+/** Rooms are 4-way connected '.' tiles, so doors and furniture split them apart. */
+function findRooms(): Tile[][] {
+  const seen = new Set<string>();
+  const rooms: Tile[][] = [];
+  MAP.forEach((row, y) =>
+    [...row].forEach((c, x) => {
+      if (c !== '.' || seen.has(`${x},${y}`)) return;
+      seen.add(`${x},${y}`);
+      const room = [{ x, y }];
+      for (let i = 0; i < room.length; i++) {
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const n = { x: room[i].x + dx, y: room[i].y + dy };
+          if (MAP[n.y]?.[n.x] !== '.' || seen.has(`${n.x},${n.y}`)) continue;
+          seen.add(`${n.x},${n.y}`);
+          room.push(n);
+        }
+      }
+      rooms.push(room);
+    })
+  );
+  return rooms;
+}
+
 export default class GrayDimensionScene extends Phaser.Scene {
   private campusTile?: Tile;
   private player!: Player;
   private keys!: MovementKeys;
+  private guards: Guard[] = [];
 
   constructor() {
     super('GrayDimensionScene');
@@ -75,6 +100,10 @@ export default class GrayDimensionScene extends Phaser.Scene {
     this.player = new Player(this, tiles, SPAWN.x, SPAWN.y);
     this.keys = new MovementKeys(this);
 
+    this.guards = findRooms()
+      .filter((room) => !room.some((t) => t.x === SPAWN.x && t.y === SPAWN.y))
+      .map((room) => new Guard(this, tiles, room, () => this.player.tile));
+
     startAutosave(() => ({ scene: this.scene.key, position: this.campusTile ?? { x: -1, y: -1 } }));
 
     addTextButton(this, 8 * SCALE, 8 * SCALE, '< Back to campus').on('pointerdown', () =>
@@ -82,9 +111,10 @@ export default class GrayDimensionScene extends Phaser.Scene {
     );
   }
 
-  update(): void {
+  update(time: number, delta: number): void {
     const { dx, dy } = this.keys.direction();
     if (this.player.walk(dx, dy)) this.keys.consumeTaps();
+    this.guards.forEach((g) => g.update(time, delta));
   }
 
   private drawMap(tiles: TileGrid): void {
