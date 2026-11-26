@@ -41,6 +41,15 @@ export default class Player {
     return { x: this.tileX, y: this.tileY };
   }
 
+  placeAt(x: number, y: number): void {
+    this.scene.tweens.killTweensOf(this.root);
+    this.figure.setY(0).setAngle(0).setFrame(FRAME.front);
+    this.moving = false;
+    this.tileX = x;
+    this.tileY = y;
+    this.root.setPosition(tileCenter(x), footY(y));
+  }
+
   walk(dx: number, dy: number): boolean {
     if (this.moving || (dx === 0 && dy === 0)) return false;
 

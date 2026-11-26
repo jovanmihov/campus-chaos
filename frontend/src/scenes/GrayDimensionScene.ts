@@ -97,9 +97,11 @@ export default class GrayDimensionScene extends Phaser.Scene {
   private keys!: MovementKeys;
   private guards: Guard[] = [];
   private tiles!: TileGrid;
-  private papers = new Map<string, Phaser.GameObjects.Rectangle>();
+  private allPapers = new Map<string, Phaser.GameObjects.Rectangle>();
+  private papers = new Map<string, Phaser.GameObjects.Rectangle>(); // not yet collected
   private testCount = 0;
   private exitOpen = false;
+  private exitGfx?: Phaser.GameObjects.Graphics;
   private finished = false;
 
   constructor() {
@@ -120,11 +122,11 @@ export default class GrayDimensionScene extends Phaser.Scene {
     this.drawMap(tiles);
     // Scenes are reused on re-entry, so reset the run
     this.exitOpen = this.finished = false;
-    this.papers.clear();
+    this.allPapers.clear();
     const tests = tilesOf('T');
     this.testCount = tests.length;
     tests.forEach(({ x, y }) =>
-      this.papers.set(
+      this.allPapers.set(
         `${x},${y}`,
         this.add
           .rectangle(x * TILE + TILE / 2, y * TILE + TILE / 2, TILE * 0.5, TILE * 0.65, PAPER_COLOR)
@@ -132,6 +134,7 @@ export default class GrayDimensionScene extends Phaser.Scene {
           .setAngle(-8)
       )
     );
+    this.papers = new Map(this.allPapers);
 
     this.player = new Player(this, tiles, SPAWN.x, SPAWN.y);
     this.keys = new MovementKeys(this);
@@ -157,7 +160,7 @@ export default class GrayDimensionScene extends Phaser.Scene {
     const key = `${x},${y}`;
     const paper = this.papers.get(key);
     if (paper) {
-      paper.destroy();
+      paper.setVisible(false);
       this.papers.delete(key);
       this.updateCounter();
       if (this.papers.size === 0) this.openExit();
@@ -167,11 +170,24 @@ export default class GrayDimensionScene extends Phaser.Scene {
 
   private openExit(): void {
     this.exitOpen = true;
-    const gfx = this.add.graphics().fillStyle(OPEN_EXIT_COLOR, 1);
+    const gfx = (this.exitGfx = this.add.graphics().fillStyle(OPEN_EXIT_COLOR, 1));
     tilesOf('E').forEach(({ x, y }) => {
       this.tiles.unblock(x, y);
       gfx.fillRect(x * TILE, y * TILE, TILE, TILE);
     });
+  }
+
+  private caught(): void {
+    this.cameras.main.flash(250, 255, 60, 60);
+    this.player.placeAt(SPAWN.x, SPAWN.y);
+    this.papers = new Map(this.allPapers);
+    this.papers.forEach((p) => p.setVisible(true));
+    if (this.exitOpen) {
+      this.exitOpen = false;
+      this.exitGfx?.destroy();
+      tilesOf('E').forEach(({ x, y }) => this.tiles.block(x, y));
+    }
+    this.updateCounter();
   }
 
   private finish(): void {
@@ -192,7 +208,8 @@ export default class GrayDimensionScene extends Phaser.Scene {
     const { dx, dy } = this.keys.direction();
     if (this.player.walk(dx, dy)) this.keys.consumeTaps();
     this.guards.forEach((g) => g.update(time, delta));
-    this.checkTile();
+    if (this.guards.some((g) => g.seen)) this.caught();
+    else this.checkTile();
   }
 
   private drawMap(tiles: TileGrid): void {
