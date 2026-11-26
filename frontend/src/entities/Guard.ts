@@ -56,6 +56,7 @@ export default class Guard {
     const start = Phaser.Utils.Array.GetRandom(room);
     this.body = new Player(scene, grid, start.x, start.y);
     this.body.figure.setTint(TINT);
+    this.body.root.setDepth(5);   // above the cone (4), below the player (6)
     this.area = new Set(room.map(key));
     this.cone = scene.add.graphics().setDepth(4);
   }
